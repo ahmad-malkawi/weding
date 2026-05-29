@@ -552,7 +552,6 @@
         border-radius: 12px;
         padding: 11px;
         font-weight: 700;
-        cursor: pointer;
         min-height: 44px;
         transition: 0.22s ease;
     }
@@ -799,9 +798,9 @@
             <p class="story"> حضوركم يكمّل فرحتنا ويزيدها بهجة،<br/> وننتظر مشاركتكم لنا هذه الليلة المميّزة بكل حب
                 وامتنان. </p>
             <div aria-label="خيارات إضافية للدعوة" class="utility-grid" role="group">
-                <div class="utility-ve" id="downloadCalendar"></div>
+                <div class="utility-ve" id="q"></div>
                 <button class="utility-btn" id="openMap" type="button">فتح الموقع</button>
-                <div class="utility-ve" id="copyInviteText"></div>
+                <div class="utility-ve" id="a"></div>
             </div>
             <p aria-live="polite" class="status" id="statusText"></p>
             <p class="blessing">نسأل الله أن يبارك لنا ولكم، ويجمعنا دائمًا على الفرح والمحبّة</p>
@@ -844,8 +843,6 @@
     var intro = document.getElementById("introOverlay");
     var enterButton = document.getElementById("enterInvitation");
     var statusText = document.getElementById("statusText");
-    var downloadCalendar = document.getElementById("downloadCalendar");
-    var copyInviteText = document.getElementById("copyInviteText");
     var openMap = document.getElementById("openMap");
     var weddingSong = document.getElementById("weddingSong");
     var isMusicOn = false;
@@ -1081,8 +1078,6 @@
     }
 
     enterButton.addEventListener("click", openInvitation);
-    downloadCalendar.addEventListener("click", downloadICS);
-    copyInviteText.addEventListener("click", copyText);
     openMap.addEventListener("click", openMapLocation);
     window.addEventListener("resize", resizeCanvas);
     renderState();
