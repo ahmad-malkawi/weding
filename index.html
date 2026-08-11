@@ -965,6 +965,42 @@
             .ornament { letter-spacing: .35rem; }
         }
 
+        /* ============ MOBILE / TOUCH STABILITY ============
+           backdrop-filter + animated gradients cause repaint flicker on phones.
+           Replace glass with solid translucency and drop the heaviest effects.
+           Applies equally to iOS & Android, so both stay identical. */
+        @media (hover: none), (max-width: 768px) {
+            .lux-shell {
+                -webkit-backdrop-filter: none;
+                backdrop-filter: none;
+                background:
+                    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='84' height='84'%3E%3Cg fill='none' stroke='%23e4c079' stroke-opacity='0.05' stroke-width='1'%3E%3Crect x='22' y='22' width='40' height='40'/%3E%3Crect x='22' y='22' width='40' height='40' transform='rotate(45 42 42)'/%3E%3C/g%3E%3C/svg%3E"),
+                    linear-gradient(180deg, rgba(28, 19, 46, .92), rgba(15, 10, 24, .94));
+                background-repeat: repeat, no-repeat;
+                background-size: 84px 84px, auto;
+            }
+            .intro-card {
+                -webkit-backdrop-filter: none;
+                backdrop-filter: none;
+                background:
+                    radial-gradient(140% 90% at 50% -10%, rgba(255, 246, 219, .1), transparent 55%),
+                    linear-gradient(180deg, rgba(32, 22, 50, .93), rgba(17, 11, 27, .96));
+            }
+            .lang-toggle, .music-toggle {
+                -webkit-backdrop-filter: none;
+                backdrop-filter: none;
+                background: rgba(20, 16, 32, .92);
+            }
+            /* remove the repaint-heavy layers on phones */
+            .shell-beam,
+            .intro-bokeh,
+            .intro-card::after,
+            body::after { display: none; }
+            body::before { animation: none; opacity: .14; filter: none; }
+            .monogram .ring-o { animation: none; }
+            h1, .couple-title, .intro-card h2 { animation: none; }
+        }
+
         @media (prefers-reduced-motion: reduce) {
             *, *::before, *::after {
                 animation: none !important;
