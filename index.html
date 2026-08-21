@@ -1164,7 +1164,7 @@
                         </svg>
                     </span>
                     <strong class="left">
-                        <span class="name-role" data-ar="كريمته" data-en="His Daughter">كريمته</span>
+                        <span class="name-role" id="brideRole" data-ar="كريمته" data-en="His Daughter">كريمته</span>
                         <span id="brideName">عائشة</span>
                     </strong>
                 </span>
@@ -1192,7 +1192,7 @@
                 <article class="card location-card">
                     <span class="card-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/></svg></span>
                     <span class="k" data-ar="الوقت" data-en="Time">الوقت</span>
-                    <span class="v" id="eventTimeText">7:00 مساءً</span>
+                    <span class="v" id="eventTimeText">من 6:30 إلى 8:30 مساءً</span>
                 </article>
                 <article class="card location-card">
                     <span class="card-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 21s7-6.3 7-11a7 7 0 0 0-14 0c0 4.7 7 11 7 11z"/><circle cx="12" cy="10" r="2.6"/></svg></span>
@@ -1239,10 +1239,11 @@
     var defaults = {
         groom: "أحمد", bride: "عائشة",
         groomEn: "Ahmad", brideEn: "Aisha",
-        date: "2026-10-01", time: "18:30",
+        date: "2026-10-01", time: "18:30", endTime: "20:30",
         place: "قاعات قصر النخيل - قاعة سرايا",
         placeEn: "Al-Nakheel Palace Halls – Saraya Hall",
-        mapUrl: "https://maps.app.goo.gl/FP1sxcvJ5j4UmZvD7"
+        mapUrl: "https://maps.app.goo.gl/FP1sxcvJ5j4UmZvD7",
+        showBride: false
     };
     var state = Object.assign({}, defaults);
     var eventTimestamp = 0;
@@ -1252,7 +1253,7 @@
     var d = $("days"), h = $("hours"), m = $("minutes"), s = $("seconds");
     var countdown = $("countdown"), countdownTitle = $("countdownTitle"), countdownEndedMessage = $("countdownEndedMessage");
     var daysBox = $("daysBox"), hoursBox = $("hoursBox"), minutesBox = $("minutesBox"), secondsBox = $("secondsBox");
-    var groomName = $("groomName"), brideName = $("brideName"), monogram = $("monogram");
+    var groomName = $("groomName"), brideName = $("brideName"), brideRole = $("brideRole"), monogram = $("monogram");
     var eventDateText = $("eventDateText"), eventTimeText = $("eventTimeText"), eventPlaceText = $("eventPlaceText");
     var intro = $("introOverlay"), enterButton = $("enterInvitation"), statusText = $("statusText");
     var guestGreeting = $("guestGreeting"), guestName = $("guestName");
@@ -1324,16 +1325,40 @@
         if (lang === "en") return displayH + ":" + mm + " " + (hh >= 12 ? "PM" : "AM");
         return displayH + ":" + mm + " " + (hh >= 12 ? "مساءً" : "صباحًا");
     }
+    function formatTimeRange(startVal, endVal) {
+        var sp = startVal.split(":"), ep = endVal.split(":");
+        if (sp.length < 2 || ep.length < 2) return formatTimeLabel(startVal);
+        var sh = Number(sp[0]), eh = Number(ep[0]);
+        var sDisp = (sh % 12 || 12) + ":" + sp[1];
+        var eDisp = (eh % 12 || 12) + ":" + ep[1];
+        if (lang === "en") {
+            var sMerEn = sh >= 12 ? "PM" : "AM", eMerEn = eh >= 12 ? "PM" : "AM";
+            if (sMerEn === eMerEn) return sDisp + " – " + eDisp + " " + eMerEn;
+            return sDisp + " " + sMerEn + " – " + eDisp + " " + eMerEn;
+        }
+        var sMer = sh >= 12 ? "مساءً" : "صباحًا", eMer = eh >= 12 ? "مساءً" : "صباحًا";
+        if (sMer === eMer) return "من " + sDisp + " إلى " + eDisp + " " + eMer;
+        return "من " + sDisp + " " + sMer + " إلى " + eDisp + " " + eMer;
+    }
     function recalculateEventTimestamp() {
         eventTimestamp = new Date(state.date + "T" + state.time + ":00+03:00").getTime();
     }
 
     function renderState() {
-        groomName.textContent = lang === "en" ? state.groomEn : state.groom;
-        brideName.textContent = lang === "en" ? state.brideEn : state.bride;
+        var isEn = lang === "en";
+        groomName.textContent = isEn ? state.groomEn : state.groom;
+        /* bride name is private by default — shown only when ?bride=1 is set */
+        if (state.showBride) {
+            brideRole.style.display = "";
+            brideRole.textContent = isEn ? "His Daughter" : "كريمته";
+            brideName.textContent = isEn ? state.brideEn : state.bride;
+        } else {
+            brideRole.style.display = "none";
+            brideName.textContent = isEn ? "His Daughter" : "كريمته";
+        }
         eventDateText.textContent = formatDateLabel(state.date);
-        eventTimeText.textContent = formatTimeLabel(state.time);
-        eventPlaceText.textContent = lang === "en" ? state.placeEn : state.place;
+        eventTimeText.textContent = formatTimeRange(state.time, state.endTime);
+        eventPlaceText.textContent = isEn ? state.placeEn : state.place;
         recalculateEventTimestamp();
         updateCountdown();
     }
@@ -1453,6 +1478,22 @@
         renderState();
     }
 
+    /* ---------- URL flags ---------- */
+    function initFlags() {
+        try {
+            var params = new URLSearchParams(window.location.search);
+            var keys = ["bride", "showbride", "reveal"];
+            for (var i = 0; i < keys.length; i++) {
+                var v = params.get(keys[i]);
+                if (v !== null) {
+                    var val = v.trim().toLowerCase();
+                    state.showBride = !(val === "0" || val === "false" || val === "no" || val === "off");
+                    break;
+                }
+            }
+        } catch (e) { /* keep default (hidden) */ }
+    }
+
     /* ---------- personalized guest name (from URL) ---------- */
     function initGuestName() {
         var value = "";
@@ -1501,6 +1542,7 @@
     weddingSong.addEventListener("play", function () { musicToggle.classList.add("playing"); });
 
     resizeCanvas();
+    initFlags();
     applyLanguage();
     initGuestName();
     initReveal();
